@@ -10,5 +10,10 @@ public class Place_Order
     public final String month="ID||month";
     public final String year="ID||year";
     public final String Purchase="XPATH||//button[contains(text(), 'Purchase')]";
+    public final String Search="ID||search_query_top";
+
+
+
+
 
 }

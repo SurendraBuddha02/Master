@@ -12,10 +12,11 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -35,12 +36,23 @@ public class Assessment_1
     static ExtentTest test;
     static ExtentReports report;
 
-    @BeforeTest
-    public void Launch() throws Exception
+
+    @Parameters("browser")
+    @Test (priority=0)
+    public void Launch(String browser) throws Exception
     {
-        System.setProperty("webdriver.chrome.driver", "Drivers/chromedriver.exe");
-        // Instantiate a ChromeDriver class.
-        driver = new ChromeDriver();
+        if(browser.equalsIgnoreCase("firefox"))
+        {
+            //create firefox instance
+            System.setProperty("webdriver.gecko.driver", "Drivers/geckodriver.exe");
+            driver = new FirefoxDriver();
+        }
+            //Check if parameter passed as 'chrome'
+        else if(browser.equalsIgnoreCase("Chrome"))
+        {
+            System.setProperty("webdriver.chrome.driver", "Drivers/chromedriver.exe");
+            driver = new ChromeDriver();
+        }
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
         ExcelUtils=new ExcelUtils();
@@ -50,7 +62,7 @@ public class Assessment_1
         Place_Order=new Place_Order();
         String timestamp = new SimpleDateFormat("YYY.MM.dd.hh.mm.ss").format(new Date());
         report = new ExtentReports(System.getProperty("user.dir") + "\\Reports\\Assessment1_" + timestamp + ".html", false);
-        System.out.println("report:" + System.getProperty("user.dir") + "\\Reports\\Assessment1_" + timestamp + ".html");
+      //  System.out.println("report:" + System.getProperty("user.dir") + "\\Reports\\Assessment1_" + timestamp + ".html");
 
         //Reading Values from Excel
         Excel_CIB_value = ExcelUtils.readExcelDataFileToArray("src/test/resources/CIB_Assessment.xlsx", "Login");
@@ -58,19 +70,18 @@ public class Assessment_1
         driver.get(Excel_CIB_value[1][0]);
     }
 
-    @Test (priority=0)
+    @Test (priority=1)
     public void Signup() throws Exception
     {
         Username=RandomStringUtils.randomAlphanumeric(10);
        // System.out.println("Name:"+RandomStringUtils.randomAlphanumeric(10));
         CommonUtil.clickOnElement(Signup_User.Signup);
         CommonUtil.typeOnElement(Signup_User.Signup_Username,Username);
-        System.out.println("Password:"+Excel_CIB_value[1][1]);
+      //  System.out.println("Password:"+Excel_CIB_value[1][1]);
         Thread.sleep(1000);
         CommonUtil.typeOnElement(Signup_User.Signup_Password,Excel_CIB_value[1][1]);
         test=report.startTest("Assessment_1");
         test.log(LogStatus.PASS,"Sign Up Page",test.addBase64ScreenShot(CommonUtil.captureScreenshot("TestCase1")));
-
         CommonUtil.clickOnElement(Signup_User.Signup_Btn);
         Thread.sleep(2000);
 
@@ -96,14 +107,14 @@ public class Assessment_1
         }
     }
 
-    @Test(priority=1)
+    @Test(priority=2)
     public void Add_Items_to_Cart() throws Exception
     {
         CommonUtil.clickOnElement(Add_Items_Cart.Log_In);
         CommonUtil.typeOnElement(Add_Items_Cart.Login_Username,Username);
         CommonUtil.typeOnElement(Add_Items_Cart.Login_Password,Excel_CIB_value[1][1]);
         CommonUtil.clickOnElement(Add_Items_Cart.Login_Btn);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         CommonUtil.clickOnElement(Add_Items_Cart.Monitors);
         CommonUtil.clickOnElement(Add_Items_Cart.Asus_Full_HD);
         CommonUtil.clickOnElement(Add_Items_Cart.Add_to_cart);
@@ -189,13 +200,13 @@ public class Assessment_1
             test.log(LogStatus.FAIL,"Nexus 6  not Successfully added to cart",test.addBase64ScreenShot(CommonUtil.captureScreenshot("TestCase1")));
         }
 
-        //Retrieving Asus FullHD Monitor Price
+        //Retrieving Nexus 6 Price
         String Nexus6_price=CommonUtil.getText(Add_Items_Cart.Asus_Full_HD_Price);
         String[] Nexus6 = Nexus6_price.split(" ");
         //System.out.println("Price:"+Nexus6[0]);
         String[] Nexus6price=Nexus6[0].split("\\$");
         int Nexus_Price = Integer.parseInt(Nexus6price[1]);
-        System.out.println("Nexus6price:"+Nexus_Price);
+      //  System.out.println("Nexus6price:"+Nexus_Price);
 
         //Calculating Total Price
         int Expected_Total_Price=AsusPrice+Nexus_Price*2;
